@@ -1,0 +1,790 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Das Lithium-Komplott</title>
+<meta name="generator" content="hocr-to-epub-fxl"/>
+<link rel="canonical" href="https://milahu.github.io/michael-nehls-lithium-komplott-2025/index.xhtml"/>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #menu-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+  }
+  #menu-bar {
+    transform-origin: top left;
+    /* transition: transform 0.1s ease; */
+    z-index: 10;
+  }
+
+  #menu-bar > * {
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 16px;
+  }
+
+  #menu-bar button {
+    padding: 5px 10px;
+  }
+
+  #menu-bar input {
+    width: 50px;
+    text-align: center;
+  }
+
+  #menu-bar button,
+  #menu-bar input,
+  #menu-bar > a {
+    display: inline-block;
+    padding: 5px 10px;
+    border: solid 1px #5b5b5b;
+    border-radius: 2px;
+    color: black;
+    text-decoration: none;
+    cursor: default;
+  }
+  #menu-bar button:hover,
+  #menu-bar > a:hover {
+    background: #e5e5e5;
+  }
+
+  #viewer {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto;
+    background-color: #e0e0e0;
+    scroll-behavior: smooth;
+  }
+
+  iframe {
+    border: none;
+    flex: 1 1 auto;
+    height: 100%;
+    /* ensure full viewport height */
+    /* height: 100vh; */
+    margin: 0 5px;
+    transform-origin: top center;
+  }
+
+  /* Single-page mode */
+  #viewer.single-page iframe {
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Two-page mode */
+  #viewer.two-page iframe {
+    width: 45%;
+  }
+</style>
+</head>
+<body>
+
+<div id="menu-bar">
+  <button id="prevPage">Previous</button>
+  <button id="nextPage">Next</button>
+  <input type="number" id="pageNumber" min="1" value="1"/>
+  <span id="totalPages"></span>
+  <button id="toggleMode">Two-Page Mode</button>
+  <a href="OEBPS/allpages.xhtml">All Pages</a>
+  <a href="OEBPS/fulltext.xhtml">Full Text</a>
+</div>
+
+<div id="viewer" class="single-page">
+  <iframe id="page1" name="page1" enable-annotation=""></iframe>
+</div>
+
+<script>
+  // <![CDATA[
+
+  // --- CONFIG: list of SVG files ---
+  const svgFiles = [
+'OEBPS/001.xhtml',
+'OEBPS/002.xhtml',
+'OEBPS/003.xhtml',
+'OEBPS/004.xhtml',
+'OEBPS/005.xhtml',
+'OEBPS/006.xhtml',
+'OEBPS/007.xhtml',
+'OEBPS/008.xhtml',
+'OEBPS/009.xhtml',
+'OEBPS/010.xhtml',
+'OEBPS/011.xhtml',
+'OEBPS/012.xhtml',
+'OEBPS/013.xhtml',
+'OEBPS/014.xhtml',
+'OEBPS/015.xhtml',
+'OEBPS/016.xhtml',
+'OEBPS/017.xhtml',
+'OEBPS/018.xhtml',
+'OEBPS/019.xhtml',
+'OEBPS/020.xhtml',
+'OEBPS/021.xhtml',
+'OEBPS/022.xhtml',
+'OEBPS/023.xhtml',
+'OEBPS/024.xhtml',
+'OEBPS/025.xhtml',
+'OEBPS/026.xhtml',
+'OEBPS/027.xhtml',
+'OEBPS/028.xhtml',
+'OEBPS/029.xhtml',
+'OEBPS/030.xhtml',
+'OEBPS/031.xhtml',
+'OEBPS/032.xhtml',
+'OEBPS/033.xhtml',
+'OEBPS/034.xhtml',
+'OEBPS/035.xhtml',
+'OEBPS/036.xhtml',
+'OEBPS/037.xhtml',
+'OEBPS/038.xhtml',
+'OEBPS/039.xhtml',
+'OEBPS/040.xhtml',
+'OEBPS/041.xhtml',
+'OEBPS/042.xhtml',
+'OEBPS/043.xhtml',
+'OEBPS/044.xhtml',
+'OEBPS/045.xhtml',
+'OEBPS/046.xhtml',
+'OEBPS/047.xhtml',
+'OEBPS/048.xhtml',
+'OEBPS/049.xhtml',
+'OEBPS/050.xhtml',
+'OEBPS/051.xhtml',
+'OEBPS/052.xhtml',
+'OEBPS/053.xhtml',
+'OEBPS/054.xhtml',
+'OEBPS/055.xhtml',
+'OEBPS/056.xhtml',
+'OEBPS/057.xhtml',
+'OEBPS/058.xhtml',
+'OEBPS/059.xhtml',
+'OEBPS/060.xhtml',
+'OEBPS/061.xhtml',
+'OEBPS/062.xhtml',
+'OEBPS/063.xhtml',
+'OEBPS/064.xhtml',
+'OEBPS/065.xhtml',
+'OEBPS/066.xhtml',
+'OEBPS/067.xhtml',
+'OEBPS/068.xhtml',
+'OEBPS/069.xhtml',
+'OEBPS/070.xhtml',
+'OEBPS/071.xhtml',
+'OEBPS/072.xhtml',
+'OEBPS/073.xhtml',
+'OEBPS/074.xhtml',
+'OEBPS/075.xhtml',
+'OEBPS/076.xhtml',
+'OEBPS/077.xhtml',
+'OEBPS/078.xhtml',
+'OEBPS/079.xhtml',
+'OEBPS/080.xhtml',
+'OEBPS/081.xhtml',
+'OEBPS/082.xhtml',
+'OEBPS/083.xhtml',
+'OEBPS/084.xhtml',
+'OEBPS/085.xhtml',
+'OEBPS/086.xhtml',
+'OEBPS/087.xhtml',
+'OEBPS/088.xhtml',
+'OEBPS/089.xhtml',
+'OEBPS/090.xhtml',
+'OEBPS/091.xhtml',
+'OEBPS/092.xhtml',
+'OEBPS/093.xhtml',
+'OEBPS/094.xhtml',
+'OEBPS/095.xhtml',
+'OEBPS/096.xhtml',
+'OEBPS/097.xhtml',
+'OEBPS/098.xhtml',
+'OEBPS/099.xhtml',
+'OEBPS/100.xhtml',
+'OEBPS/101.xhtml',
+'OEBPS/102.xhtml',
+'OEBPS/103.xhtml',
+'OEBPS/104.xhtml',
+'OEBPS/105.xhtml',
+'OEBPS/106.xhtml',
+'OEBPS/107.xhtml',
+'OEBPS/108.xhtml',
+'OEBPS/109.xhtml',
+'OEBPS/110.xhtml',
+'OEBPS/111.xhtml',
+'OEBPS/112.xhtml',
+'OEBPS/113.xhtml',
+'OEBPS/114.xhtml',
+'OEBPS/115.xhtml',
+'OEBPS/116.xhtml',
+'OEBPS/117.xhtml',
+'OEBPS/118.xhtml',
+'OEBPS/119.xhtml',
+'OEBPS/120.xhtml',
+'OEBPS/121.xhtml',
+'OEBPS/122.xhtml',
+'OEBPS/123.xhtml',
+'OEBPS/124.xhtml',
+'OEBPS/125.xhtml',
+'OEBPS/126.xhtml',
+'OEBPS/127.xhtml',
+'OEBPS/128.xhtml',
+'OEBPS/129.xhtml',
+'OEBPS/130.xhtml',
+'OEBPS/131.xhtml',
+'OEBPS/132.xhtml',
+'OEBPS/133.xhtml',
+'OEBPS/134.xhtml',
+'OEBPS/135.xhtml',
+'OEBPS/136.xhtml',
+'OEBPS/137.xhtml',
+'OEBPS/138.xhtml',
+'OEBPS/139.xhtml',
+'OEBPS/140.xhtml',
+'OEBPS/141.xhtml',
+'OEBPS/142.xhtml',
+'OEBPS/143.xhtml',
+'OEBPS/144.xhtml',
+'OEBPS/145.xhtml',
+'OEBPS/146.xhtml',
+'OEBPS/147.xhtml',
+'OEBPS/148.xhtml',
+'OEBPS/149.xhtml',
+'OEBPS/150.xhtml',
+'OEBPS/151.xhtml',
+'OEBPS/152.xhtml',
+'OEBPS/153.xhtml',
+'OEBPS/154.xhtml',
+'OEBPS/155.xhtml',
+'OEBPS/156.xhtml',
+'OEBPS/157.xhtml',
+'OEBPS/158.xhtml',
+'OEBPS/159.xhtml',
+'OEBPS/160.xhtml',
+'OEBPS/161.xhtml',
+'OEBPS/162.xhtml',
+'OEBPS/163.xhtml',
+'OEBPS/164.xhtml',
+'OEBPS/165.xhtml',
+'OEBPS/166.xhtml',
+'OEBPS/167.xhtml',
+'OEBPS/168.xhtml',
+'OEBPS/169.xhtml',
+'OEBPS/170.xhtml',
+'OEBPS/171.xhtml',
+'OEBPS/172.xhtml',
+'OEBPS/173.xhtml',
+'OEBPS/174.xhtml',
+'OEBPS/175.xhtml',
+'OEBPS/176.xhtml',
+'OEBPS/177.xhtml',
+'OEBPS/178.xhtml',
+'OEBPS/179.xhtml',
+'OEBPS/180.xhtml',
+'OEBPS/181.xhtml',
+'OEBPS/182.xhtml',
+'OEBPS/183.xhtml',
+'OEBPS/184.xhtml',
+'OEBPS/185.xhtml',
+'OEBPS/186.xhtml',
+'OEBPS/187.xhtml',
+'OEBPS/188.xhtml',
+'OEBPS/189.xhtml',
+'OEBPS/190.xhtml',
+'OEBPS/191.xhtml',
+'OEBPS/192.xhtml',
+'OEBPS/193.xhtml',
+'OEBPS/194.xhtml',
+'OEBPS/195.xhtml',
+'OEBPS/196.xhtml',
+'OEBPS/197.xhtml',
+'OEBPS/198.xhtml',
+'OEBPS/199.xhtml',
+'OEBPS/200.xhtml',
+'OEBPS/201.xhtml',
+'OEBPS/202.xhtml',
+'OEBPS/203.xhtml',
+'OEBPS/204.xhtml',
+'OEBPS/205.xhtml',
+'OEBPS/206.xhtml',
+'OEBPS/207.xhtml',
+'OEBPS/208.xhtml',
+'OEBPS/209.xhtml',
+'OEBPS/210.xhtml',
+'OEBPS/211.xhtml',
+'OEBPS/212.xhtml',
+'OEBPS/213.xhtml',
+'OEBPS/214.xhtml',
+'OEBPS/215.xhtml',
+'OEBPS/216.xhtml',
+'OEBPS/217.xhtml',
+'OEBPS/218.xhtml',
+'OEBPS/219.xhtml',
+'OEBPS/220.xhtml',
+'OEBPS/221.xhtml',
+'OEBPS/222.xhtml',
+'OEBPS/223.xhtml',
+'OEBPS/224.xhtml',
+'OEBPS/225.xhtml',
+'OEBPS/226.xhtml',
+'OEBPS/227.xhtml',
+'OEBPS/228.xhtml',
+'OEBPS/229.xhtml',
+'OEBPS/230.xhtml',
+'OEBPS/231.xhtml',
+'OEBPS/232.xhtml',
+'OEBPS/233.xhtml',
+'OEBPS/234.xhtml',
+'OEBPS/235.xhtml',
+'OEBPS/236.xhtml',
+'OEBPS/237.xhtml',
+'OEBPS/238.xhtml',
+'OEBPS/239.xhtml',
+'OEBPS/240.xhtml',
+'OEBPS/241.xhtml',
+'OEBPS/242.xhtml',
+'OEBPS/243.xhtml',
+'OEBPS/244.xhtml',
+'OEBPS/245.xhtml',
+'OEBPS/246.xhtml',
+'OEBPS/247.xhtml',
+'OEBPS/248.xhtml',
+'OEBPS/249.xhtml',
+'OEBPS/250.xhtml',
+'OEBPS/251.xhtml',
+'OEBPS/252.xhtml',
+'OEBPS/253.xhtml',
+'OEBPS/254.xhtml',
+'OEBPS/255.xhtml',
+'OEBPS/256.xhtml',
+'OEBPS/257.xhtml',
+'OEBPS/258.xhtml',
+'OEBPS/259.xhtml',
+'OEBPS/260.xhtml',
+'OEBPS/261.xhtml',
+'OEBPS/262.xhtml',
+'OEBPS/263.xhtml',
+'OEBPS/264.xhtml',
+'OEBPS/265.xhtml',
+'OEBPS/266.xhtml',
+'OEBPS/267.xhtml',
+'OEBPS/268.xhtml',
+'OEBPS/269.xhtml',
+'OEBPS/270.xhtml',
+'OEBPS/271.xhtml',
+'OEBPS/272.xhtml',
+'OEBPS/273.xhtml',
+'OEBPS/274.xhtml',
+'OEBPS/275.xhtml',
+'OEBPS/276.xhtml',
+'OEBPS/277.xhtml',
+'OEBPS/278.xhtml',
+'OEBPS/279.xhtml',
+'OEBPS/280.xhtml',
+'OEBPS/281.xhtml',
+'OEBPS/282.xhtml',
+'OEBPS/283.xhtml',
+'OEBPS/284.xhtml',
+'OEBPS/285.xhtml',
+'OEBPS/286.xhtml',
+'OEBPS/287.xhtml',
+'OEBPS/288.xhtml',
+'OEBPS/289.xhtml',
+'OEBPS/290.xhtml',
+'OEBPS/291.xhtml',
+'OEBPS/292.xhtml',
+'OEBPS/293.xhtml',
+'OEBPS/294.xhtml',
+'OEBPS/295.xhtml',
+'OEBPS/296.xhtml',
+'OEBPS/297.xhtml',
+'OEBPS/298.xhtml',
+'OEBPS/299.xhtml',
+'OEBPS/300.xhtml',
+'OEBPS/301.xhtml',
+'OEBPS/302.xhtml',
+'OEBPS/303.xhtml',
+'OEBPS/304.xhtml',
+'OEBPS/305.xhtml',
+'OEBPS/306.xhtml',
+'OEBPS/307.xhtml',
+'OEBPS/308.xhtml',
+'OEBPS/309.xhtml',
+'OEBPS/310.xhtml',
+'OEBPS/311.xhtml',
+'OEBPS/312.xhtml',
+'OEBPS/313.xhtml',
+'OEBPS/314.xhtml',
+'OEBPS/315.xhtml',
+'OEBPS/316.xhtml',
+'OEBPS/317.xhtml',
+'OEBPS/318.xhtml',
+'OEBPS/319.xhtml',
+'OEBPS/320.xhtml',
+'OEBPS/321.xhtml',
+'OEBPS/322.xhtml',
+'OEBPS/323.xhtml',
+'OEBPS/324.xhtml',
+'OEBPS/325.xhtml',
+'OEBPS/326.xhtml',
+'OEBPS/327.xhtml',
+'OEBPS/328.xhtml',
+'OEBPS/329.xhtml',
+'OEBPS/330.xhtml',
+'OEBPS/331.xhtml',
+'OEBPS/332.xhtml',
+'OEBPS/333.xhtml',
+'OEBPS/334.xhtml',
+'OEBPS/335.xhtml',
+'OEBPS/336.xhtml',
+'OEBPS/337.xhtml',
+'OEBPS/338.xhtml',
+'OEBPS/339.xhtml',
+'OEBPS/340.xhtml',
+'OEBPS/341.xhtml',
+'OEBPS/342.xhtml',
+'OEBPS/343.xhtml',
+'OEBPS/344.xhtml',
+'OEBPS/345.xhtml',
+'OEBPS/346.xhtml',
+'OEBPS/347.xhtml',
+'OEBPS/348.xhtml',
+'OEBPS/349.xhtml',
+'OEBPS/350.xhtml',
+'OEBPS/351.xhtml',
+'OEBPS/352.xhtml',
+'OEBPS/353.xhtml',
+'OEBPS/354.xhtml',
+'OEBPS/355.xhtml',
+'OEBPS/356.xhtml',
+'OEBPS/357.xhtml',
+'OEBPS/358.xhtml',
+'OEBPS/359.xhtml',
+'OEBPS/360.xhtml',
+'OEBPS/361.xhtml',
+'OEBPS/362.xhtml',
+'OEBPS/363.xhtml',
+'OEBPS/364.xhtml',
+'OEBPS/365.xhtml',
+'OEBPS/366.xhtml',
+'OEBPS/367.xhtml',
+'OEBPS/368.xhtml',
+'OEBPS/369.xhtml',
+'OEBPS/370.xhtml',
+'OEBPS/371.xhtml',
+'OEBPS/372.xhtml',
+'OEBPS/373.xhtml',
+'OEBPS/374.xhtml',
+'OEBPS/375.xhtml',
+'OEBPS/376.xhtml',
+'OEBPS/377.xhtml',
+'OEBPS/378.xhtml',
+'OEBPS/379.xhtml',
+'OEBPS/380.xhtml',
+'OEBPS/381.xhtml',
+'OEBPS/382.xhtml',
+'OEBPS/383.xhtml',
+'OEBPS/384.xhtml',
+'OEBPS/385.xhtml',
+'OEBPS/386.xhtml',
+'OEBPS/387.xhtml',
+'OEBPS/388.xhtml',
+'OEBPS/389.xhtml',
+'OEBPS/390.xhtml',
+'OEBPS/391.xhtml',
+'OEBPS/392.xhtml',
+'OEBPS/393.xhtml',
+'OEBPS/394.xhtml',
+'OEBPS/395.xhtml',
+'OEBPS/396.xhtml',
+'OEBPS/397.xhtml',
+'OEBPS/398.xhtml',
+'OEBPS/399.xhtml',
+'OEBPS/400.xhtml',
+'OEBPS/401.xhtml',
+'OEBPS/402.xhtml',
+'OEBPS/403.xhtml',
+'OEBPS/404.xhtml',
+'OEBPS/405.xhtml',
+'OEBPS/406.xhtml',
+'OEBPS/407.xhtml',
+'OEBPS/408.xhtml',
+'OEBPS/409.xhtml',
+'OEBPS/410.xhtml',
+'OEBPS/411.xhtml',
+'OEBPS/412.xhtml',
+'OEBPS/413.xhtml',
+'OEBPS/414.xhtml',
+'OEBPS/415.xhtml',
+'OEBPS/416.xhtml',
+'OEBPS/417.xhtml',
+'OEBPS/418.xhtml',
+'OEBPS/419.xhtml',
+'OEBPS/420.xhtml',
+'OEBPS/421.xhtml',
+'OEBPS/422.xhtml',
+'OEBPS/423.xhtml',
+'OEBPS/424.xhtml',
+'OEBPS/425.xhtml',
+'OEBPS/426.xhtml',
+'OEBPS/427.xhtml',
+'OEBPS/428.xhtml',
+'OEBPS/429.xhtml',
+'OEBPS/430.xhtml',
+'OEBPS/431.xhtml',
+'OEBPS/432.xhtml',
+'OEBPS/433.xhtml',
+'OEBPS/434.xhtml',
+'OEBPS/435.xhtml',
+'OEBPS/436.xhtml',
+'OEBPS/437.xhtml',
+'OEBPS/438.xhtml',
+'OEBPS/439.xhtml',
+'OEBPS/440.xhtml',
+'OEBPS/441.xhtml',
+'OEBPS/442.xhtml',
+'OEBPS/443.xhtml',
+'OEBPS/444.xhtml',
+'OEBPS/445.xhtml',
+'OEBPS/446.xhtml',
+'OEBPS/447.xhtml',
+'OEBPS/448.xhtml',
+'OEBPS/449.xhtml',
+'OEBPS/450.xhtml',
+'OEBPS/451.xhtml',
+'OEBPS/452.xhtml',
+'OEBPS/453.xhtml',
+'OEBPS/454.xhtml',
+'OEBPS/455.xhtml',
+'OEBPS/456.xhtml',
+'OEBPS/457.xhtml',
+'OEBPS/458.xhtml',
+'OEBPS/459.xhtml',
+'OEBPS/460.xhtml',
+'OEBPS/461.xhtml',
+'OEBPS/462.xhtml',
+'OEBPS/463.xhtml',
+'OEBPS/464.xhtml',
+'OEBPS/465.xhtml',
+'OEBPS/466.xhtml',
+'OEBPS/467.xhtml',
+'OEBPS/468.xhtml',
+'OEBPS/469.xhtml',
+'OEBPS/470.xhtml',
+'OEBPS/471.xhtml',
+'OEBPS/472.xhtml',
+];
+
+  let currentPage = 1; // 1-based
+  const totalPages = svgFiles.length;
+
+  const viewer = document.getElementById('viewer');
+  const pageNumberInput = document.getElementById('pageNumber');
+  const totalPagesSpan = document.getElementById('totalPages');
+  const toggleBtn = document.getElementById('toggleMode');
+
+  totalPagesSpan.textContent = `/ ${totalPages}`;
+
+  let twoPageMode = false; // single-page default
+
+  function createIframe(id) {
+    const iframe = document.createElement('iframe');
+    iframe.id = id;
+    iframe.setAttribute("name", id);
+    // enable hypothesis annotations in iframe
+    // https://h.readthedocs.io/projects/client/en/latest/publishers/embedding.html
+    iframe.setAttribute("enable-annotation", "");
+    viewer.appendChild(iframe);
+    return iframe;
+  }
+
+  function getIframe(index) {
+    return document.getElementById(index);
+  }
+
+  function loadPages() {
+    let page1 = document.getElementById('page1');
+    if (!page1) page1 = createIframe('page1');
+
+    let page2 = document.getElementById('page2');
+    if (twoPageMode && !page2) page2 = createIframe('page2');
+    if (!twoPageMode && page2) page2.remove();
+
+    // reduce white flash on page load in dark mode
+    // wait extra 100ms to avoid white flash from text layer
+    page1.style.visibility = "hidden";
+    page1.onload = () => { setTimeout(() => { page1.style.visibility = "visible"; }, 100); };
+    if (twoPageMode) {
+      page2.style.visibility = "hidden";
+      page2.onload = () => { setTimeout(() => { page2.style.visibility = "visible"; }, 100); };
+    }
+
+    if (twoPageMode) {
+      // Compute spread: left = even page
+      let leftIndex, rightIndex;
+
+      if (currentPage === 1) {
+        leftIndex = -1;       // empty
+        rightIndex = 0;       // page 1
+      } else {
+        leftIndex = currentPage % 2 === 0 ? currentPage - 1 : currentPage - 2;
+        rightIndex = leftIndex + 1;
+      }
+
+      page1.src = leftIndex >= 0 ? svgFiles[leftIndex] : '';
+      page2.src = rightIndex < totalPages ? svgFiles[rightIndex] : '';
+
+    } else {
+      page1.src = svgFiles[currentPage - 1] || '';
+    }
+
+    pageNumberInput.value = currentPage;
+    viewer.scrollTop = 0;
+  }
+
+  function goToPage(page, fromHash = false) {
+    // if (page < 1) page = 1; // limit
+    // if (page > totalPages) page = totalPages; // limit
+    if (page < 1) page = totalPages; // overflow
+    if (page > totalPages) page = 1; // overflow
+    currentPage = page;
+    loadPages();
+    // update hash if user navigated via buttons/input/etc.
+    if (!fromHash) {
+      history.replaceState(null, '', `#${currentPage}`);
+    }
+  }
+
+  function nextPage() {
+    if (twoPageMode) goToPage(currentPage + 2);
+    else goToPage(currentPage + 1);
+  }
+
+  function prevPage() {
+    if (twoPageMode) goToPage(currentPage - 2);
+    else goToPage(currentPage - 1);
+  }
+
+  function updateMode() {
+    viewer.className = twoPageMode ? 'two-page' : 'single-page';
+    toggleBtn.textContent = twoPageMode ? 'Single-Page Mode' : 'Two-Page Mode';
+    loadPages();
+  }
+
+  document.getElementById('prevPage').addEventListener('click', prevPage);
+  document.getElementById('nextPage').addEventListener('click', nextPage);
+  pageNumberInput.addEventListener('change', () => goToPage(parseInt(pageNumberInput.value)));
+  toggleBtn.addEventListener('click', () => {
+    twoPageMode = !twoPageMode;
+    updateMode();
+  });
+
+  window.addEventListener('resize', () => {
+    // optional: could auto-switch based on width
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') prevPage();
+    if (e.key === 'ArrowRight') nextPage();
+    if (e.key === 'ArrowUp') viewer.scrollBy({ top: -50, behavior: 'smooth' });
+    if (e.key === 'ArrowDown') viewer.scrollBy({ top: 50, behavior: 'smooth' });
+  });
+
+  // Sync scrolling in two-page mode
+  viewer.addEventListener('scroll', () => {
+    if (twoPageMode) {
+      const page1 = document.getElementById('page1');
+      const page2 = document.getElementById('page2');
+      if (page1?.contentWindow) page1.contentWindow.scrollTo(0, viewer.scrollTop);
+      if (page2?.contentWindow) page2.contentWindow.scrollTo(0, viewer.scrollTop);
+    }
+  });
+
+  // prevent toolbar zoom
+  let lastDevicePixelRatio = window.devicePixelRatio;
+  function updateToolbarScale() {
+    const ratio = window.devicePixelRatio;
+    const toolbar = document.getElementById('menu-bar');
+    // Apply inverse scale so the toolbar stays 1:1 visually
+    toolbar.style.transform = `scale(${1 / ratio})`;
+    // scale toolbar height
+    // 40px = height + padding = 30px + 2*5px
+    toolbar.style.marginBottom = `${((1 / ratio) - 1) * 40}px`;
+    // Compensate for layout shrink (otherwise the scaled bar no longer spans full width)
+    toolbar.style.width = `${100 * ratio}%`;
+    lastDevicePixelRatio = ratio;
+  }
+  updateToolbarScale();
+  // Monitor for zoom changes (devicePixelRatio changes)
+  window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
+    .addEventListener('change', updateToolbarScale);
+  // Also poll periodically as fallback (some browsers don't fire the event reliably)
+  setInterval(() => {
+    if (window.devicePixelRatio !== lastDevicePixelRatio) {
+      updateToolbarScale();
+    }
+  }, 1000);
+
+  function getPageFromHash() {
+    const match = location.hash.match(/^#(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+  }
+
+  // Initial load: get page number from URL fragment ID
+  const initialPage = getPageFromHash();
+  if (initialPage && initialPage >= 1 && initialPage <= totalPages) {
+    currentPage = initialPage;
+  }
+
+  // Initial load
+  loadPages();
+  updateMode();
+
+  // Make sure the hash is correct (e.g. if user loaded without one)
+  history.replaceState(null, '', `#${currentPage}`);
+
+  // --- URL fragment synchronization ---
+  // When URL hash changes, navigate to that page
+  window.addEventListener('hashchange', () => {
+    const pageFromHash = getPageFromHash();
+    if (pageFromHash && pageFromHash !== currentPage) {
+      goToPage(pageFromHash, true);
+    }
+  });
+
+  // handle clicks from nav.xhtml
+  window.addEventListener("message", (event) => {
+    if (event.data.type === "iframe-link-click") {
+      const match = /\/OEBPS\/(\d+).xhtml$/.exec(event.data.href);
+      if (match) {
+        const pageNum = Number(match[1]);
+        // load page again to update menu
+        goToPage(pageNum);
+      }
+      else {
+        console.error("error: iframe navigated to unrecognized URL:", event.data.href);
+      }
+    }
+  });
+
+  // ]]>
+
+</script>
+
+</body>
+</html>
