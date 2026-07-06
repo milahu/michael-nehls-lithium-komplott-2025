@@ -2,7 +2,7 @@
 
 # Threshold to consider a page "white" (mean lightness close to 100)
 # WHITE_LIGHTNESS_THRESHOLD = 99.99
-WHITE_LIGHTNESS_THRESHOLD = 99.9
+WHITE_LIGHTNESS_THRESHOLD = 99.95
 
 image_dir = "065-remove-page-borders"
 
