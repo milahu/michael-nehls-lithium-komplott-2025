@@ -11,11 +11,13 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import psutil
 from PIL import Image, ImageStat
+from tqdm import tqdm
 
 
 # input directory
 src = "065-remove-page-borders"
 # src = "067-force-lightmode"
+src = "0663-level"
 
 # output file
 dst = os.path.splitext(os.path.basename(__file__))[0] + ".txt"
@@ -69,7 +71,17 @@ def main():
 
     # Compute lightness in parallel
     page_lightness = {}
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+
+    tqdm_kwargs = dict(
+        total=len(image_files),
+        ncols=80,
+        unit="page",
+    )
+
+    with (
+        ProcessPoolExecutor(max_workers=max_workers) as executor,
+        tqdm(**tqdm_kwargs) as pbar
+    ):
         futures = {executor.submit(try_compute_lightness, f): f for f in image_files}
         for future in as_completed(futures):
             res, err = future.result()
@@ -78,12 +90,31 @@ def main():
                 raise err  # propagate exception to main
             filename, lightness = res
             page_lightness[filename] = lightness
-            print(f"lightness: {lightness:10.6f} {filename}")
+            # print(f"lightness: {lightness:10.6f} {filename}")
+            pbar.update(1)
 
     with open(dst, "w", encoding="utf8") as fd:
         # sort by lightness descending
         for (filename, lightness) in sorted(page_lightness.items(), key=lambda x: -x[1]):
             fd.write(f"{lightness:010.6f} {filename}\n")
+
+    print(f"done {dst}")
+
+    # explain next steps
+    print()
+    print("next steps:")
+    print()
+    print("run ./06845-show-white-pages.py")
+    print()
+    print("find the lightness thresholds")
+    print("- between white pages and non-white pages -> set config: fill_white_pages_white_lightness_threshold")
+    print("- between non-white pages and text pages -> set config: deskew_white_lightness_threshold")
+    print()
+    print("non-white pages contain only small text elements like page numbers")
+    print("which should be preserved by 0685-fill-white-pages.py")
+    print()
+    print("text pages also contain straight lines of text")
+    print("which can be used to deskew the pages by their contents in 070-deskew.py")
 
 
 if __name__ == "__main__":

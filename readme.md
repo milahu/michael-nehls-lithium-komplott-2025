@@ -113,3 +113,5 @@ if your epub reader fails to open these files, then just use a web browser
 ## related
 
 - [github.com/milahu/books](https://github.com/milahu/books)
+- [diybookscanner.org/forum](https://diybookscanner.org/forum/)
+- [SLUM: The Shadow Library Uptime Monitor](https://open-slum.org/)

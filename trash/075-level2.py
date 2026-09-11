@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+# apply color leveling again
+# after 060-rotate-crop-level.py
+# read from 070-deskew
+# write to 075-level2.tmp.{time}
+# move 070-deskew to 070-deskew.bak
+# move 075-level2.tmp.{time} to 070-deskew
+
 import os
 import sys
 import time
@@ -14,18 +21,69 @@ import numpy as np
 
 
 # --- Setup -------------------------------------------------------------------
-os.chdir(Path(__file__).resolve().parent)
-src = Path("045-crop-scan-area")
-dst = Path(Path(__file__).stem)
-dst.mkdir(parents=True, exist_ok=True)
-
+# os.chdir(Path(__file__).resolve().parent)
+src = Path("070-deskew")
+bak = Path("070-deskew.bak")
+dst = src # replace source
+tmp = Path(Path(__file__).stem + f".tmp.{time.time()}")
+tmp.mkdir(parents=True, exist_ok=True)
 
 # --- Settings ----------------------------------------------------------------
-config_path = Path("050-measure-crop-size.py")
+config_path = Path("074-level2-config.py")
 
-spec = importlib.util.spec_from_file_location("measure_crop_size_config", config_path)
+spec = importlib.util.spec_from_file_location("level2_config", config_path)
 config = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(config)
+
+
+if not config.do_level:
+    print("noop. nothing to do here. config.do_level is False")
+    sys.exit()
+
+
+if bak.exists():
+    print(f"error: {bak} exists, so this script was already run")
+    sys.exit(1)
+
+
+def chained_levels(min_1, max_1, min_r, max_r):
+    """
+    Compute the second levels (min_2, max_2) such that:
+    levels(min_2, max_2) ∘ levels(min_1, max_1)
+    == levels(min_r, max_r)
+
+    All values are expected in [0, 1].
+    """
+    scale_1 = max_1 - min_1
+    if scale_1 == 0:
+        raise ValueError("max_1 and min_1 must be different")
+
+    min_2 = (min_r - min_1) / scale_1
+    max_2 = (max_r - min_1) / scale_1
+
+    return min_2, max_2
+
+
+if config.do_level and not (config.lowthresh == config.previous_lowthresh and config.highthresh == config.previous_highthresh):
+    # color leveling was already applied by 060-rotate-crop-level.py
+    # (config.lowthresh, config.highthresh) specifies the resulting levels
+    # so here we factor in the previous leveling operation
+    if config.lowthresh < config.previous_lowthresh:
+        print(f"error: config.lowthresh < config.previous_lowthresh")
+        sys.exit(1)
+    if config.highthresh > config.previous_highthresh:
+        print(f"error: config.highthresh > config.previous_highthresh")
+        sys.exit(1)
+    min_2, max_2 = chained_levels(
+        min_1=config.previous_lowthresh,
+        max_1=config.previous_highthresh,
+        min_r=config.lowthresh,
+        max_r=config.highthresh,
+    )
+    print(f"previous: levels 1: min={config.previous_lowthresh} max={config.previous_highthresh}")
+    print(f"now:      levels 2: min={min_2} max={max_2}")
+    print(f"result:   levels r: min={config.lowthresh} max={config.highthresh}")
+    config.lowthresh, config.highthresh = min_2, max_2
 
 
 # --- Helper: level adjustment (contrast stretch) -----------------------------
@@ -57,38 +115,21 @@ def apply_level(img: np.ndarray, low: float = 0.2, high: float = 0.9) -> np.ndar
 def process_image(image_path: Path) -> str:
     filename = image_path.name
     page_number = int(filename.split(".")[0]) # "001.jpg" -> 1
-    output_path = dst / filename
+    output_path = tmp / filename
     if output_path.exists():
         print(f"keeping {output_path}")
         return
 
-    crop_box = config.crop_odd_box if page_number % 2 == 1 else config.crop_even_box
-    rotation = config.rotate_odd if page_number % 2 == 1 else config.rotate_even
+    if not config.do_level:
+        # noop
+        shutil.copy(image_path, output_path)
+        return
 
     # Load
     img = cv2.imread(str(image_path), cv2.IMREAD_UNCHANGED)
     if img is None:
         print(f"error: failed to read {image_path}")
         sys.exit(1)
-
-    # Rotate
-    if config.do_rotate:
-        if rotation == 90:
-            img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-        elif rotation == 270:
-            img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        elif rotation == 180:
-            img = cv2.rotate(img, cv2.ROTATE_180)
-        else:
-            # arbitrary angle
-            h, w = img.shape[:2]
-            M = cv2.getRotationMatrix2D((w/2, h/2), rotation, 1.0)
-            img = cv2.warpAffine(img, M, (w, h))
-
-    # Crop
-    if config.do_crop:
-        x1, y1, x2, y2 = crop_box
-        img = img[y1:y2, x1:x2]
 
     # Level (contrast stretch)
     if config.do_level:
@@ -129,6 +170,12 @@ if __name__ == "__main__":
                 e, tb = err
                 print(f"\nException in worker:\n{tb}")
                 raise e
+
+    print(f"> mv {str(src)!r} {str(bak)!r}")
+    src.rename(bak)
+
+    print(f"> mv {str(tmp)!r} {str(dst)!r}")
+    tmp.rename(dst)
 
     t2 = time.time()
     print(f"done {len(images)} pages in {int(t2 - t1)} seconds using {num_workers} workers")

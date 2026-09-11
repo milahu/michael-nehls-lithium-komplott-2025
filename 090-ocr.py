@@ -10,14 +10,22 @@ from multiprocessing import Pool
 import psutil
 import requests
 
+from _shared import (
+    load_config,
+    get_page_num,
+    latest_dst_exists,
+    remove_done_files,
+)
+
 
 # source directory
+# src = "0685-fill-white-pages"
+src = "0663-level"
 src = "070-deskew"
+src = "072-deskew-fix-page-size"
 
-# default config
-scan_resolution = 300
-scan_format = "jpg"
-ocr_lang = "deu+eng"
+# destination directory
+dst = Path(Path(__file__).stem)
 
 
 # ----------------------------
@@ -43,22 +51,25 @@ def load_kv_file(path):
 # worker function
 # ----------------------------
 def run_tesseract(task):
-    inp, out_hocr, scan_resolution, ocr_lang, tessdata_dir = task
+    inp, out_hocr, config = task
 
     inp = Path(inp)
     out_hocr = Path(out_hocr)
 
     if out_hocr.exists():
-        return f"{inp.name}: keeping {out_hocr}"
+        # return f"{inp.name}: keeping {out_hocr}"
+        return None
 
     cmd = [
         "tesseract",
         str(inp),
         "-",
         "-c", "tessedit_create_hocr=1",
-        "--dpi", str(scan_resolution),
-        "-l", ocr_lang,
-        "--tessdata-dir", tessdata_dir,
+        # produce per-character bounding boxes
+        # "-c", "hocr_char_boxes=1",
+        "--dpi", str(config.scan_resolution),
+        "-l", config.ocr_lang,
+        "--tessdata-dir", config.tessdata_dir,
     ]
 
     env = dict(os.environ)
@@ -93,24 +104,31 @@ def run_tesseract(task):
     return result
 
 
-def download_tessdata_best(langs, dst="tessdata_best"):
+def download_tessdata_best(langs, config):
     """
-    Download Tesseract tessdata_best models with caching (Python version of tessdata_best.sh)
+    Download Tesseract tessdata_best models with caching
     """
+
+    dst = config.tessdata_dir
 
     if not langs:
         raise ValueError("no arguments (example: tessdata_best('eng', 'deu', 'rus'))")
 
     script_dir = Path(__file__).resolve().parent
-    os.chdir(script_dir)
+    # os.chdir(script_dir)
 
+    # TODO? remove tessdata_dir in favor of tessdata_cache_dir
     dst = Path(dst)
-    cache_dir = Path.home() / ".cache" / "tessdata_best"
+
+    cache_dir = config.tessdata_cache_dir
+    cache_dir = os.path.expanduser(cache_dir) # expand "~"
+    cache_dir = os.path.expandvars(cache_dir) # expand "$HOME" etc
+    cache_dir = Path(cache_dir)
 
     dst.mkdir(parents=True, exist_ok=True)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    base_url = "https://github.com/tesseract-ocr/tessdata_best/raw/main"
+    base_url = config.tessdata_base_url
 
     to_download = []
 
@@ -167,14 +185,13 @@ def download_tessdata_best(langs, dst="tessdata_best"):
 def main():
 
     global src
-    global scan_resolution
-    global scan_format
-    global ocr_lang
+    global dst
+    # global config
+
+    config = load_config()
 
     script_dir = Path(__file__).resolve().parent
-    os.chdir(script_dir)
-
-    dst = Path(Path(__file__).stem)
+    # os.chdir(script_dir)
 
     dst.mkdir(exist_ok=True)
 
@@ -184,18 +201,14 @@ def main():
     ocr_cfg = load_kv_file("080-ocr-config.txt")
     print(f"ocr_cfg: {json.dumps(ocr_cfg, indent=2)}")
 
-    scan_resolution = int(scan_cfg.get("scan_resolution", scan_resolution))
-    # scan_format = scan_cfg.get("scan_format", scan_format)
-    ocr_lang = ocr_cfg.get("ocr_lang", ocr_lang)
+    # TODO? remove tessdata_dir in favor of tessdata_cache_dir
+    download_tessdata_best(config.ocr_lang.split("+"), config)
 
-    tessdata_dir = "tessdata_best"
-
-    download_tessdata_best(ocr_lang.split("+"), tessdata_dir)
+    config.tessdata_dir = os.path.abspath(config.tessdata_dir)
 
     # tesseract writes HOCR files with the image paths relative to the workdir
     os.chdir(dst)
 
-    tessdata_dir = "../" + tessdata_dir
     dst = Path("..") / dst
 
     # ----------------------------
@@ -206,10 +219,14 @@ def main():
     print(f"num_workers: {num_workers}")
 
     src_dir = Path("..") / src
-    inputs = sorted(src_dir.glob(f"*.{scan_format}"))
+    inputs = sorted(src_dir.glob(f"*.{config.scan_format}"))
 
     tasks = [
-        (str(inp), dst / (inp.stem + ".hocr"), scan_resolution, ocr_lang, tessdata_dir)
+        (
+            str(inp),
+            dst / (inp.stem + ".hocr"),
+            config,
+        )
         for inp in inputs
     ]
 
@@ -218,7 +235,8 @@ def main():
 
     with Pool(processes=num_workers) as pool:
         for result in pool.imap_unordered(run_tesseract, tasks):
-            print(result)
+            if result:
+                print(result)
             num_pages += 1
 
     t2 = time.time()

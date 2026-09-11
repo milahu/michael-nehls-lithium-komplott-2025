@@ -50,6 +50,8 @@ mkShell {
       scikit-image # skimage
       nur.repos.milahu.python3.pkgs.doxapy
       requests
+      tqdm
+      pyside6
     ]))
 
     img2pdf
